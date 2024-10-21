@@ -27,6 +27,11 @@ public class TypeOfWorkoutController {
         return typeOfWorkoutDao.getAllTypesOfWorkouts();
     }
 
+    @RequestMapping(path = "/typeOfWorkout/{id}", method = RequestMethod.GET)
+    public TypeOfWorkout getTypeOfWorkoutById(@PathVariable int id) {
+        return typeOfWorkoutDao.getTypeOfWorkoutById(id);
+    }
+
     @RequestMapping(path = "/typeOfWorkout", method = RequestMethod.POST)
     public int addNewWorkoutEntry(@RequestBody TypeOfWorkout typeOfWorkout) {
         return typeOfWorkoutDao.addTypeOfWorkout(typeOfWorkout);

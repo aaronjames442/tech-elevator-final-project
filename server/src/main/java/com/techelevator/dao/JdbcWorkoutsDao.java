@@ -11,7 +11,6 @@ import java.util.List;
 @Component
 public class JdbcWorkoutsDao implements WorkoutsDao {
 
-
     private final JdbcTemplate jdbcTemplate;
 
     public JdbcWorkoutsDao(DataSource dataSource) {
@@ -21,7 +20,11 @@ public class JdbcWorkoutsDao implements WorkoutsDao {
     @Override
     public List<Workouts> getAllWorkouts() {
         List<Workouts> workouts = new ArrayList<>();
-        String sql = "SELECT * FROM workouts";
+        String sql = "SELECT w.workout_id, w.type_id, w.user_id, w.day, w.duration, " +
+                "t.type_name, t.exercise_name, t.description, t.sets, t.reps " +
+                "FROM workouts w " +
+                "JOIN type_of_workout t ON w.type_id = t.type_id";
+
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
 
         while (results.next()) {
@@ -33,7 +36,12 @@ public class JdbcWorkoutsDao implements WorkoutsDao {
 
     @Override
     public Workouts getWorkoutsById(int workoutId) {
-        String sql = "SELECT * FROM workouts WHERE workout_id = ?";
+        String sql = "SELECT w.workout_id, w.type_id, w.user_id, w.day, w.duration, " +
+                "t.type_name, t.exercise_name, t.description, t.sets, t.reps " +
+                "FROM workouts w " +
+                "JOIN type_of_workout t ON w.type_id = t.type_id " +
+                "WHERE w.workout_id = ?";
+
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, workoutId);
 
         if (results.next()) {
@@ -64,15 +72,52 @@ public class JdbcWorkoutsDao implements WorkoutsDao {
         return rowsDeleted > 0;
     }
 
-    private Workouts mapRowToWorkouts(SqlRowSet rowSet) {
-        return new Workouts(
-                rowSet.getInt("workout_id"),
-                rowSet.getInt("type_id"),
-                rowSet.getInt("user_id"),
-                rowSet.getString("day"),
-                rowSet.getInt("duration")
-        );
+
+
+    @Override
+    public int getTotalWorkouts() {
+        String sql = "SELECT COUNT(*) FROM workouts";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
+
+    @Override
+    public int getTotalSets() {
+        String sql = "SELECT SUM(t.sets) FROM workouts w JOIN type_of_workout t ON w.type_id = t.type_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    @Override
+    public int getTotalReps() {
+        String sql = "SELECT SUM(t.reps) FROM workouts w JOIN type_of_workout t ON w.type_id = t.type_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    @Override
+    public int getTotalDuration() {
+        String sql = "SELECT SUM(w.duration) FROM workouts w";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    private Workouts mapRowToWorkouts(SqlRowSet rowSet) {
+        Workouts workout = new Workouts();
+        workout.setWorkoutId(rowSet.getInt("workout_id"));
+        workout.setTypeId(rowSet.getInt("type_id"));
+        workout.setUserId(rowSet.getInt("user_id"));
+        workout.setDay(rowSet.getString("day"));
+        workout.setDuration(rowSet.getInt("duration"));
+
+        // Adding the exercise details from type_of_workout table
+        workout.setTypeName(rowSet.getString("type_name"));
+        workout.setExerciseName(rowSet.getString("exercise_name"));
+        workout.setDescription(rowSet.getString("description"));
+        workout.setSets(rowSet.getInt("sets"));
+        workout.setReps(rowSet.getInt("reps"));
+
+        return workout;
+    }
+
+
 }
+
 
 

@@ -1,98 +1,309 @@
 <template>
-  <div class="home">
-    <div id="heading-line">
-      <h1>
-        Home
-        <loading-spinner id="spinner" v-bind:spin="isLoading" />
-      </h1>
+  <div class="container">
+    <!-- Section 1: Sidebar with Logo -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="/public/BicepCurl.jpg" alt="Fitness Tracker logo" class="logo-image">
+        <h2>Fitness Tracker</h2>
+      </div>
+    </aside>
+
+    <!-- Section 2: Title Section -->
+    <header class="header">
+      <h1>Fitness Tracker</h1>
+      <p>Stay fit, stay healthy!</p>
+    </header>
+
+    <!-- Section 3: Navigation Links -->
+    <nav class="nav">
+      <ul>
+        <li><router-link to="/">Home</router-link></li>
+        <li><router-link to="/contact">Contact Us</router-link></li>
+        <li><router-link to="/login">Login</router-link></li>
+        <li><router-link to="/logout">Logout</router-link></li>
+        <li><router-link to="/register">Register</router-link></li>
+      </ul>
+    </nav>
+
+    <!-- Section 4: Workout Day List -->
+    <section class="workout-list">
+      <h3>Workout Day List</h3>
+      <ul>
+        <li>Monday</li>
+        <li>Tuesday</li>
+        <li>Wednesday</li>
+        <li>Thursday</li>
+        <li>Friday</li>
+      </ul>
+    </section>
+
+    <!-- Section 5: Workout History and Progress Tracking -->
+    <section class="workout-history">
+      <h2>Workout History & Progress Tracker</h2>
+      <div class="button-container">
+      <router-link to="/workout-history">
+        <button>View workout history</button>
+      </router-link>
+      <button @click="goToProgressTracking">Progress Tracking</button>
     </div>
-    <h2>Loading spinner demonstration</h2>
-    <p>
-      This is a demonstration of how you can show or hide a "spinner" icon to
-      let the user know something is happening. Before calling an API, you'd set
-      the data property <code>isLoading</code> to <code>true</code>. When the
-      call completes, set it to <code>false</code>.
-    </p>
-    <p>
-      For this demonstration, clicking the checkbox below sets
-      <code>isLoading</code> to <code>true</code>, so it simulates what the user
-      would see when your app is accessing an API.
-    </p>
-    <input type="checkbox" name="loading" id="loading" v-model="isLoading" /> Is
-    Loading
-    <p id="login-message" v-if="!isLoggedIn">
-      Welcome! You may browse anonymously as much as you wish,<br />
-      but you must
-      <router-link v-bind:to="{ name: 'login' }">Login</router-link> to add
-      items to your shopping cart.
-    </p>
-    <h2>Font-awesome demonstration</h2>
-    <p>
-      This code shows you how you can include Font-awesome icons on your page. Below are two icons:
-      one to indicate a "tile" view of products, and another to indicate a "table" view. There's also a little bit
-      of styling to get you started, but you can style it your own way. And there's a property to track which view is "active".
-    </p>
-    <font-awesome-icon
-      v-bind:class="{ 'view-icon': true, active: cardView }"
-      v-on:click="cardView = true"
-      icon="fa-solid fa-grip"
-      title="View tiles"
-    />
-    <font-awesome-icon
-      v-bind:class="{ 'view-icon': true, active: !cardView }"
-      v-on:click="cardView = false"
-      icon="fa-solid fa-table"
-      title="View table"
-    />
+
+
+    <div class="links-container">  
+    <router-link to="/workout-types">
+  View Available Workout Types
+</router-link>
+
+<router-link to="/fitness-goals">
+  Set Your Fitness Goals
+</router-link>
+</div>
+
+      <!-- Display fetched progress data -->
+      <div v-if="progressData">
+        <p>Total Workouts: {{ progressData.totalWorkouts }}</p>
+        <p>Total Sets: {{ progressData.totalSets }}</p>
+        <p>Total Reps: {{ progressData.totalReps }}</p>
+        <p>Total Duration: {{ progressData.totalDuration }} minutes</p>
+      </div>
+    </section>
+
+    <!-- Section 6: Workout Type Schedule (Exercise Details) -->
+    <section class="workout-details">
+      <h3>Workout Type Schedule</h3>
+      <p>Exercise Name: {{ exerciseName }}</p>
+      <p>Description: {{ description }}</p>
+      <p>Sets: {{ sets }}</p>
+      <p>Reps: {{ reps }}</p>
+      <p>Duration: {{ duration }}</p>
+
+      <!-- Add, Edit, and Delete Buttons -->
+      <div class="actions">
+        <button @click="goToAddExercise">Add Exercise</button>
+        <button @click="goToUpdateExercise">Update Exercise</button>
+        <button @click="goToDeleteExercise">Delete Exercise</button>
+        <button @click="goToAddWorkoutDay">Add Workout Day</button>
+        
+      </div>
+    </section>
+
+    
+    <footer class="footer">
+      <p>&copy; 2024 Fitness Tracker. All rights reserved.</p>
+    </footer>
   </div>
 </template>
 
 <script>
-import LoadingSpinner from "../components/LoadingSpinner.vue";
+import axios from 'axios';
 
 export default {
-  components: {
-    LoadingSpinner,
-  },
+  props: ['id'],
   data() {
     return {
-      isLoading: false,
-      cardView: true,
+      exerciseName: '',
+      description: '',
+      sets: null,
+      reps: null,
+      duration: null,
+      progressData: null, // To store progress tracking data
     };
   },
-  computed: {
-    isLoggedIn() {
-      return this.$store.state.token.length > 0;
+  methods: {
+    goToAddExercise() {
+      this.$router.push({ name: 'addExercise' });
+    },
+    goToUpdateExercise() {
+      this.$router.push({ name: 'updateWorkout' });
+    },
+    goToDeleteExercise() {
+      this.$router.push({ name: 'deleteWorkout' });
+    },
+    goToProgressTracking() {
+      this.$router.push({ name: 'progressTracking' });
+    },
+    goToAddWorkoutDay() {
+      this.$router.push({ name: 'addWorkoutDay' });
+    },
+    getProgressTracking() {
+      const token = localStorage.getItem('authToken'); 
+      axios.get('http://localhost:9000/workouts/progress', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+        .then((response) => {
+          this.progressData = response.data;
+        })
+        .catch((error) => {
+          console.error('Error fetching progress:', error);
+        });
     },
   },
 };
 </script>
 
 <style scoped>
-#spinner {
-  color: green;
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr 4fr 1fr;
+  grid-template-rows: auto 1fr 2fr auto;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
 }
 
-.view-icon {
-  font-size: 1.2rem;
-  margin-right: 7px;
-  padding: 3px;
-  color: #444;
-  border-radius: 3px;
+
+.sidebar {
+  grid-column: 1 / 2;
+  grid-row: 1 / 4;
+  background-color: #f0f0f0;
+  padding: 20px;
+  text-align: center;
 }
 
-.view-icon.active {
-  background-color: lightgreen;
+.logo-image {
+  width: 100px;
+  height: auto;
+  margin-bottom: 10px;
 }
 
-.view-icon:not(.active) {
-  font-size: 1.2rem;
-  margin-right: 7px;
+
+.header {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  text-align: center;
+}
+
+
+.nav {
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.navigation ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.navigation li {
+  margin-bottom: 10px;
+}
+
+/* Workout List */
+.workout-list {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+/* Workout History & Progress Tracking */
+.workout-history {
+  text-align: center;
+}
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+button {
+  background-color: #a3d8f4;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
   cursor: pointer;
+  border-radius: 5px;
 }
 
-.view-icon:not(.active):hover {
-  color: blue;
-  background-color: rgba(255, 255, 255, 0.7);
+button:hover {
+  background-color: #88b4cf;
+}
+
+/* Workout Type Schedule */
+.workout-details {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.actions button {
+  margin-right: 10px;
+}
+
+.links-container {
+  display: inline-flex;
+  gap: 20px;
+}
+
+.links-container a {
+  text-decoration: none;
+  color: #0073e6;
+}
+
+.links-container a:hover {
+  text-decoration: underline;
+}
+
+
+.footer {
+  grid-column: 1 / 4;
+  grid-row: 4 / 5;
+  text-align: center;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    padding: 10px;
+  }
+
+  .sidebar,
+  .nav,
+  .workout-list,
+  .workout-details {
+    grid-column: 1 / 2;
+    grid-row: auto;
+    padding: 15px;
+  }
+
+  .logo-image {
+    width: 80px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .button-container {
+    flex-direction: column;
+  }
+}
+
+/* Extra small devices (phones) */
+@media (max-width: 425px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    padding: 5px;
+  }
+
+  .header h1 {
+    font-size: 18px;
+  }
+
+  button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
 }
 </style>

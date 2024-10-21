@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.util.List;
 @PreAuthorize("isAuthenticated()")
@@ -24,6 +26,24 @@ public class WorkoutsController {
         return workoutsDao.getAllWorkouts();
     }
 
+    @RequestMapping(path = "/workouts/progress", method = RequestMethod.GET)
+    public Map<String, Object> getWorkoutProgress() {
+        Map<String, Object> progress = new HashMap<>();
+
+        int totalWorkouts = workoutsDao.getTotalWorkouts();
+        int totalSets = workoutsDao.getTotalSets();
+        int totalReps = workoutsDao.getTotalReps();
+        int totalDuration = workoutsDao.getTotalDuration();
+
+        progress.put("totalWorkouts", totalWorkouts);
+        progress.put("totalSets", totalSets);
+        progress.put("totalReps", totalReps);
+        progress.put("totalDuration", totalDuration);
+
+        return progress;
+    }
+
+    
     @RequestMapping(path = "/workouts", method = RequestMethod.POST)
     public Workouts addNewWorkoutsDay(@RequestBody Workouts workouts) {
         return workoutsDao.addWorkouts(workouts);

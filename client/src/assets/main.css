@@ -2,6 +2,27 @@
 
 /* Add global project styles here */
 
+/* Styles for desktop view (1024px or larger) */
+@media screen and (min-width: 1024px) {
+  body {
+    font-size: 16px;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Adjust buttons and other elements */
+  button {
+    padding: 15px 30px;
+  }
+}
+
 * {
   font-size: 16px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

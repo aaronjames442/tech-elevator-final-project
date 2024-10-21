@@ -14,4 +14,10 @@ public interface WorkoutsDao {
     boolean updateWorkouts(Workouts workouts);
 
     boolean deleteWorkouts(int workoutId);
+
+    int getTotalWorkouts();
+    int getTotalSets();
+    int getTotalReps();
+    int getTotalDuration();
 }
+

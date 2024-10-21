@@ -18,7 +18,7 @@ export default {
         getTypes() {
             TypeOfWorkoutService.getAllTypeOfWorkout().then( (response) => {
                 this.TypesOfWorkouts = response.data;
-                console.log(this.TypesOfWorkouts);
+            
             });
             
 
